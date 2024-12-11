@@ -2,7 +2,7 @@ import pygame
 from pygame import MOUSEBUTTONDOWN
 import sys
 
-offWHITE = (220, 220, 220)
+offWHITE = (230, 230, 230)
 offBLACK = (50, 50, 50)
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
@@ -62,11 +62,24 @@ magenta = pygame.draw.circle(screen, MAGENTA, [675, 75],10)
 
 eraser = pygame.image.load('Images/Eraser.png')
 screen.blit(eraser, (575, 11))
+square = pygame.image.load('Shapes/SQUARE.jpg')
+screen.blit(square, (525, 10))
+circle = pygame.image.load('Shapes/CIRCLE.jpg')
+screen.blit(circle, (525, 52))
+draw = pygame.image.load('Shapes/DRAW.jpg')
+screen.blit(draw, (483, 10))
+line = pygame.image.load('Shapes/LINE.png')
+screen.blit(line, (483, 52))
 
 pygame.display.flip()
+SHAPE = "DRAW"
 size = 3
 COLOUR = BLACK
 prev_x, prev_y = None, None
+line_start = None
+line_end = None
+count = 0
+loops = 0
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -116,22 +129,57 @@ while True:
                 COLOUR = MAGENTA
             elif 574 <= x <= 654 and 10 <= y <= 90:
                 COLOUR = offWHITE
-
+            elif 525 <= x <= 565 and 10 <= y <= 50:
+                if COLOUR == offWHITE:
+                    COLOUR = BLACK
+                SHAPE = "SQUARE"
+            elif 525 <= x <= 565 and 52 <= y <= 92:
+                if COLOUR == offWHITE:
+                    COLOUR = BLACK
+                SHAPE = "CIRCLE"
+            elif 483 <= x <= 523 and 10 <= y <= 50:
+                if COLOUR == offWHITE:
+                    COLOUR = BLACK
+                SHAPE = "DRAW"
+            elif 483 <= x <= 523 and 52 <= y <= 92:
+                SHAPE = "LINE"
             if 64 <= x < 800 and 104 <= y < 600:
                 if prev_x is not None and prev_y is not None:
                     if COLOUR == offWHITE:
                         pygame.draw.rect(screen, COLOUR, [x - 9, y - 9, 20, 20])
-                        pygame.draw.line(screen, COLOUR, (prev_x, prev_y), (x, y), size * 2)
+                        pygame.draw.line(screen, COLOUR, (prev_x, prev_y), (x, y), 20)
                     else:
-                        # Draw a line from the previous position to the current position
-                        pygame.draw.line(screen, COLOUR, (prev_x, prev_y), (x, y), size * 2)
-                        # Draw the circle at the current position for precision
-                pygame.draw.circle(screen, COLOUR, [x, y], size)
+                        if SHAPE == "SQUARE":
+                            pygame.draw.rect(screen, COLOUR, [x - 9, y - 9, 20, 20])
+                            count = 0
+                        elif SHAPE == "CIRCLE":
+                            pygame.draw.circle(screen, COLOUR, [x - 4, y - 4], 15)
+                            count = 0
+                        elif SHAPE == "DRAW":
+                            pygame.draw.line(screen, COLOUR, (prev_x, prev_y), (x, y), size * 3)
+                            pygame.draw.circle(screen, COLOUR, [x, y], size)
+                            count = 0
+                if SHAPE == "LINE":
+                    while True:
+                        if count == 0:
+                            if MOUSEBUTTONDOWN:
+                                if button[0]:
+                                    line_start = (x, y)
+                                    count = 1
+                                    break
+                        if count == 1:
+                            if MOUSEBUTTONDOWN:
+                                if button[0]:
+                                    new_x, new_y = pygame.mouse.get_pos()
+                                    line_end = (new_x, new_y)
+                                    pygame.draw.line(screen, COLOUR, line_start, line_end, size * 2)
+                                    pygame.display.flip()
+                                    line_start = None
+                                    line_end = None
+                                    count = 0
 
-                prev_x, prev_y = x, y  # Update the previous position
+
+                prev_x, prev_y = x, y
                 pygame.display.flip()
-
-            # Reset the previous position when the mouse button is released
         else:
             prev_x, prev_y = None, None
-            
